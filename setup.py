@@ -8,8 +8,8 @@ requirements = []  # add Python dependencies here
 setup(
     name='awx-custom-credential-plugin-cyberark',
     version='0.1',
-    author='GSK',
-    author_email='jeffrey.s.thorn@gsk.com',
+    author='Me',
+    author_email='me@nobody.com',
     description='',
     long_description='',
     license='Apache License 2.0',
