@@ -6,23 +6,23 @@ requirements = []  # add Python dependencies here
 # e.g., requirements = ["PyYAML"]
 
 setup(
-    name='awx-custom-credential-plugin-example',
+    name='awx-custom-credential-plugin-cyberark',
     version='0.1',
-    author='Ansible, Inc.',
-    author_email='info@ansible.com',
+    author='GSK',
+    author_email='jeffrey.s.thorn@gsk.com',
     description='',
     long_description='',
     license='Apache License 2.0',
     keywords='ansible',
-    url='http://github.com/ansible/awx-custom-credential-plugin-example',
-    packages=['awx_custom_credential_plugin_example'],
+    url='https://github.com/spicoli9000/awx-custom-credential-plugin-example',
+    packages=['awx_custom_credential_plugin_cyberark'],
     include_package_data=True,
     zip_safe=False,
     setup_requires=[],
     install_requires=requirements,
     entry_points = {
         'awx.credential_plugins': [
-            'example_plugin = awx_custom_credential_plugin_example:example_plugin',
+            'jst_cyberark_plugin = awx_custom_credential_plugin_cyberark:jst_cyberark_plugin',
         ]
     }
 )
