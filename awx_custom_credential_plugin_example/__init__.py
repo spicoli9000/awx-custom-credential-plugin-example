@@ -1,8 +1,8 @@
-import collections
+import collections, requests, json
 
 CredentialPlugin = collections.namedtuple('CredentialPlugin', ['name', 'inputs', 'backend'])
 
-def some_lookup_function(**kwargs):
+def call_cyberark(**kwargs):
     #
     # IMPORTANT:
     # replace this section of code with Python code that *actually*
@@ -10,25 +10,37 @@ def some_lookup_function(**kwargs):
     # (*this* code is just provided for the sake of example)
     #
     url = kwargs.get('url')
-    token = kwargs.get('token')
-    identifier = kwargs.get('identifier')
+    cert = kwargs.get('cert')
+    key = kwargs.get('key')
+    appid = kwargs.get('appid')
+    safe = kwargs.get('safe')
+    username = kwargs.get('username')
 
-    if token != 'VALID':
-        raise ValueError('Invalid token!')
+    password = "none"
 
-    value = {
-        'username': 'mary',
-        'email': 'mary@example.org',
-        'password': 'super-secret'
-    }
+    # make tempdir for cert/keys
+    tempdir = subprocess.check_output(['mktemp','-d']).decode("utf-8").replace('\n','')
+    certfile = tempdir + "/" + "gpacert.crt"
+    fcert = open(certpath, 'w')
+    fcert.write(cert)
+    fcert.close
 
-    if identifier in value:
-        return value[identifier]
+    keyfile = tempdir + "/" + "gpa_private.key"
+    fkey = open(keyfile, 'w')
+    fkey.write(key)
+    fkey.close
 
-    raise ValueError(f'Could not find a value for {identifier}.')
+    cyberark_url = url + "?AppID=" + appid + "&Safe=" + safe + "&Username=" + username 
+    resp = requests.get(cyberark_url,cert=(certfile,keyfile), verfiy=False)
+    myjson = resp.json()
+    password = myjson['Content']
+    
+    return password
+
+    #raise ValueError(f'Could not find a value for {identifier}.')
 
 example_plugin = CredentialPlugin(
-    'Example AWX Credential Plugin',
+    'My CyberArk Credential Plugin',
     # see: https://docs.ansible.com/ansible-tower/latest/html/userguide/credential_types.html
     # inputs will be used to create a new CredentialType() instance
     #
@@ -46,29 +58,43 @@ example_plugin = CredentialPlugin(
     #
     # "I would like Machine Credential A to retrieve its username using
     # Credential-O-Matic B at identifier=some_key"
+
     inputs={
         'fields': [{
             'id': 'url',
-            'label': 'Server URL',
+            'label': 'Cyberark AIM URL',
             'type': 'string',
-        }, {
-            'id': 'token',
-            'label': 'Authentication Token',
+        },{
+            'id': 'appid',
+            'label': 'Cyberark App ID',
+            'type': 'string'
+        }{
+            'id': 'safe',
+            'label': 'Cyberark Safe',
+            'type': 'string'
+        }{
+            'id': 'username',
+            'label': 'Cyberark Safe Username',
+            'type': 'string'
+        }{
+            'id': 'cert',
+            'label': 'Cyberark Certificate',
             'type': 'string',
+            'multiline': True,
+            'secret': True,
+        },  {
+            'id': 'key',
+            'label': 'Cyberark Private Key',
+            'type': 'string',
+            'multiline': True,
             'secret': True,
         }],
-        'metadata': [{
-            'id': 'identifier',
-            'label': 'Identifier',
-            'type': 'string',
-            'help_text': 'The name of the key in My Credential System to fetch.'
-        }],
-        'required': ['url', 'token', 'secret_key'],
+        'required': ['url', 'appid', 'safe','username','cert','key'],
     },
     # backend is a callable function which will be passed all of the values
     # defined in `inputs`; this function is responsible for taking the arguments,
     # interacting with the third party credential management system in question
     # using Python code, and returning the value from the third party
     # credential management system
-    backend = some_lookup_function
+    backend = call_cyberark
 )
